@@ -32,101 +32,94 @@ export default {
             },
             statusMessage: "",
             apiData: {
-                root_url: typeof yunusPluginData !== 'undefined' ? yunusPluginData.root_url : 'http://localhost:5173',
+                root_url: typeof yunusPluginData !== 'undefined' ? yunusPluginData.root_url.replace(/\/?$/, '/') : 'http://localhost:5173/',
                 nonce: typeof yunusPluginData !== 'undefined' ? yunusPluginData.nonce : 'development_nonce'
             }
         };
     },
     methods: {
         async loadSettings() {
-    // Mock data for local development
-    if (this.apiData.root_url === 'http://localhost:5173') {
-        console.log("Mock loading settings locally");
-        this.settings.numRows = 5;
-        this.settings.dateFormat = 'human';
-        this.statusMessage = "Settings loaded (Mock)";
-        return;
-    }
+            if (this.apiData.root_url === 'http://localhost:5173/') {
+                console.log("Mock loading settings locally");
+                this.settings.numRows = 5;
+                this.settings.dateFormat = 'human';
+                this.statusMessage = "Settings loaded (Mock)";
+                return;
+            }
 
-    try {
-        const apiUrl = `${this.apiData.root_url}/wp-json/yunus/v1/get-settings`;
-        const headers = this.apiData.nonce !== 'development_nonce' ? { 'X-WP-Nonce': this.apiData.nonce } : {};
+            try {
+                const apiUrl = `${this.apiData.root_url}wp-json/yunus/v1/get-settings`;
+                const headers = { 'X-WP-Nonce': this.apiData.nonce };
 
-        const response = await fetch(apiUrl, { headers });
-        console.log(`API URL: ${apiUrl}, Status: ${response.status}`);
+                console.log(`API URL (loadSettings): ${apiUrl}`);
 
-        // Check for HTTP errors
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+                const response = await fetch(apiUrl, { headers });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    const text = await response.text();
+                    console.error("Non-JSON response:", text);
+                    throw new Error("Expected JSON response, received HTML or other format.");
+                }
+
+                const result = await response.json();
+
+                if (result) {
+                    this.settings.numRows = result.numRows || 5;
+                    this.settings.dateFormat = result.dateFormat || 'human';
+                }
+            } catch (error) {
+                console.error("Error loading settings:", error);
+                this.statusMessage = "Error loading settings. Please check console for details.";
+            }
+        },
+        async saveSettings() {
+            if (this.apiData.root_url === 'http://localhost:5173/') {
+                console.log("Mock saving settings locally:", this.settings);
+                this.statusMessage = "Settings saved successfully! (Mock)";
+                return;
+            }
+
+            try {
+                const apiUrl = `${this.apiData.root_url}wp-json/yunus/v1/update-setting`;
+                const headers = {
+                    'X-WP-Nonce': this.apiData.nonce,
+                    'Content-Type': 'application/json'
+                };
+
+                console.log("API URL (saveSettings):", apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({
+                        setting_key: 'settings',
+                        setting_value: this.settings
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    const text = await response.text();
+                    console.error("Non-JSON response:", text);
+                    throw new Error("Expected JSON response, received HTML or other format.");
+                }
+
+                const result = await response.json();
+                this.statusMessage = result.success ? "Settings saved successfully!" : "Failed to save settings.";
+            } catch (error) {
+                console.error("Error saving settings:", error);
+                this.statusMessage = "Error saving settings. Please check console for details.";
+            }
         }
-
-        // Check if the response is JSON
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-            const text = await response.text();
-            console.error("Non-JSON response:", text);
-            throw new Error("Expected JSON response, received HTML or other format.");
-        }
-
-        const result = await response.json();
-
-        if (result) {
-            this.settings.numRows = result.numRows || 5;
-            this.settings.dateFormat = result.dateFormat || 'human';
-        }
-    } catch (error) {
-        console.error("Error loading settings:", error);
-        this.statusMessage = "Error loading settings. Please check console for details.";
-    }
-},
-async saveSettings() {
-    if (this.apiData.root_url === 'http://localhost:5173') {
-        console.log("Mock saving settings locally:", this.settings);
-        this.statusMessage = "Settings saved successfully! (Mock)";
-        return;
-    }
-
-    try {
-        const apiUrl = `${this.apiData.root_url}/wp-json/yunus/v1/update-setting`;
-        const headers = {
-            'X-WP-Nonce': this.apiData.nonce,
-            'Content-Type': 'application/json'
-        };
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-                setting_key: 'settings',
-                setting_value: this.settings
-            })
-        });
-
-        console.log(`API URL: ${apiUrl}, Status: ${response.status}`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-            const text = await response.text();
-            console.error("Non-JSON response:", text);
-            throw new Error("Expected JSON response, received HTML or other format.");
-        }
-
-        const result = await response.json();
-
-        if (result.success) {
-            this.statusMessage = "Settings saved successfully!";
-        } else {
-            this.statusMessage = "Failed to save settings.";
-        }
-    } catch (error) {
-        console.error("Error saving settings:", error);
-        this.statusMessage = "Error saving settings. Please check console for details.";
-    }
-}
     },
     mounted() {
         this.loadSettings();
