@@ -65,10 +65,9 @@ function yunus_admin_view_render_app() {
 
 // Register REST API endpoints
 function yunus_register_rest_endpoints() {
-    // Data Endpoint
-    register_rest_route('yunus/v1', '/data-endpoint', [
-        'methods' => 'GET',
-        'callback' => 'yunus_get_data_endpoint',
+    register_rest_route('yunus/v1', '/update-setting', [
+        'methods' => 'POST',
+        'callback' => 'yunus_update_setting_endpoint',
         'permission_callback' => 'yunus_verify_admin_permission',
     ]);
 
