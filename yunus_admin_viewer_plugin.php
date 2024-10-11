@@ -13,27 +13,32 @@ if (!defined('ABSPATH')) {
 
 // Enqueue scripts and styles conditionally
 function yunus_admin_view_enqueue_scripts($hook_suffix) {
-    // Load only on the custom admin page
     if ($hook_suffix === 'toplevel_page_yunus-admin-view-app') {
         wp_enqueue_script(
             'yunus_vue_app',
             plugins_url('/dist/main.js', __FILE__),
-            [],  // Add script dependencies here if any, like 'jquery'
-            filemtime(plugin_dir_path(__FILE__) . '/dist/main.js'), // Cache-busting
-            true  // Load in footer
+            [],
+            filemtime(plugin_dir_path(__FILE__) . 'dist/main.js'),
+            true
         );
-        
+
         wp_localize_script('yunus_vue_app', 'yunusPluginData', [
             'root_url' => esc_url_raw(rest_url()),
             'nonce' => wp_create_nonce('wp_rest')
         ]);
-        
-        wp_enqueue_style(
-            'yunus_vue_styles',
-            plugins_url('/dist/style.css', __FILE__),
-            [],
-            filemtime(plugin_dir_path(__FILE__) . '/dist/style.css') // Cache-busting
-        );
+
+        // Check for style.css before enqueueing
+        $style_path = plugin_dir_path(__FILE__) . 'dist/style.css';
+        if (file_exists($style_path)) {
+            wp_enqueue_style(
+                'yunus_vue_styles',
+                plugins_url('/dist/style.css', __FILE__),
+                [],
+                filemtime($style_path)
+            );
+        } else {
+            error_log('Style.css file not found at ' . $style_path);
+        }
     }
 }
 add_action('admin_enqueue_scripts', 'yunus_admin_view_enqueue_scripts');
