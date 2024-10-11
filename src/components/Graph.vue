@@ -43,7 +43,7 @@ export default {
     methods: {
         async fetchGraphData() {
             try {
-                const apiUrl = `${this.apiData.root_url}/api`;
+                const apiUrl = `${this.apiData.root_url}/api/data-endpoint`; // Update this line to point to your actual API endpoint
                 const headers = this.apiData.nonce !== 'development_nonce' ? { 'X-WP-Nonce': this.apiData.nonce } : {};
 
                 const response = await fetch(apiUrl, { headers });
@@ -55,23 +55,20 @@ export default {
                 }
 
                 const result = await response.json();
-                console.log("Graph data:", result.graph);  // Debugging log
+                console.log("Graph data:", result);  // Debugging log
 
-                // Update this section based on the actual structure of result.graph
-                if (result.graph) {
-                    // Assume graph data is structured as an array of objects with 'label' and 'value' properties
-                    // Modify according to the actual data structure you observe in the console
+                // Update this section based on the actual structure of result
+                if (result.data) { // Adjust this based on your actual API response structure
                     this.chartData = {
-                        labels: result.graph.map(item => item.label),
+                        labels: result.data.map(item => item.label), // Adjust according to your data structure
                         datasets: [
                             {
                                 label: 'Sample Data',
                                 backgroundColor: '#42b983',
-                                data: result.graph.map(item => item.value)
+                                data: result.data.map(item => item.value) // Adjust according to your data structure
                             }
                         ]
-                   };
-                    this.chartData.datasets[0].data = Object.values(result.graph).map(item => item.value);
+                    };
                 } else {
                     console.error("Unexpected graph data format:", result);
                     this.statusMessage = "Unexpected data format for graph data.";

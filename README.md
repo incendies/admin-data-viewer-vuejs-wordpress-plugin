@@ -1,5 +1,7 @@
 # Admin Data Viewer
 
+![Admin Data Viewer Screenshot](/admin-data-viewer.jpeg)
+
 ## Description
 A WordPress plugin that displays data from a remote API in a Vue app for admin users.
 
@@ -17,9 +19,6 @@ A WordPress plugin that displays data from a remote API in a Vue app for admin u
 Navigate to the 'Admin Data Viewer' menu in the WordPress admin panel to access the Vue app.
 - 'npm run build'
 - 'download the zip and upload to the wordpress'
-
-## Screenshots
-(Add screenshots here if applicable)
 
 ## Changelog
 - **1.0.0**: Initial release.
