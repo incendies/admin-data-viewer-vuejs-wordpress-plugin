@@ -30,28 +30,29 @@ export default {
     name: "Table",
     data() {
         return {
-            tableData: [], // Data to store API response
-            apiData: {
-                root_url: typeof yunusPluginData !== 'undefined' ? yunusPluginData.root_url : 'http://localhost:5173',
-                nonce: typeof yunusPluginData !== 'undefined' ? yunusPluginData.nonce : 'development_nonce'
-            }
+            tableData: [] // Data to store API response
         };
     },
     methods: {
+        // Fetch the table data from the external API
         async fetchTableData() {
             try {
-                const apiUrl = `${this.apiData.root_url}/api`;
-                const headers = this.apiData.nonce !== 'development_nonce' ? { 'X-WP-Nonce': this.apiData.nonce } : {};
-
-                const response = await fetch(apiUrl, { headers });
-
+                const apiUrl = 'https://miusage.com/v1/challenge/2/static/';
+                
+                // Fetch data from the external API
+                const response = await fetch(apiUrl);
+                
                 // Ensure the response is JSON
                 const contentType = response.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
+                    const text = await response.text();
+                    console.error("Non-JSON response detected:", text);
                     throw new Error("Received non-JSON response");
                 }
 
+                // Parse JSON response
                 const result = await response.json();
+                console.log("Fetched Data:", result); // Log the result to understand the structure
 
                 // Access the table data array
                 if (result.table && result.table.data && Array.isArray(result.table.data.rows)) {
@@ -63,7 +64,7 @@ export default {
                 console.error("Error fetching table data:", error);
             }
         },
-        // Optional: A method to format the timestamp into a readable date
+        // Format the timestamp into a readable date
         formatDate(timestamp) {
             const date = new Date(timestamp * 1000); // Assuming the date is in seconds
             return date.toLocaleDateString(); // Customize the format if needed
