@@ -1,13 +1,13 @@
 <template>
     <div>
         <h1>Graph Data</h1>
-        <BarChart :data="chartData" :options="chartOptions" />
+        <BarChart v-if="isVisible" :data="chartData" :options="chartOptions" />
         <p v-if="statusMessage">{{ statusMessage }}</p>
     </div>
 </template>
 
 <script>
-import { Bar } from 'vue-chartjs';
+import { defineAsyncComponent } from 'vue';
 import { Chart as ChartJS, Title, Tooltip, BarElement, CategoryScale, LinearScale } from 'chart.js';
 
 ChartJS.register(Title, Tooltip, BarElement, CategoryScale, LinearScale);
@@ -15,7 +15,8 @@ ChartJS.register(Title, Tooltip, BarElement, CategoryScale, LinearScale);
 export default {
     name: "Graph",
     components: {
-        BarChart: Bar
+        // Lazy load BarChart component
+        BarChart: defineAsyncComponent(() => import('vue-chartjs').then(module => module.Bar))
     },
     data() {
         return {
@@ -34,6 +35,7 @@ export default {
                 maintainAspectRatio: false
             },
             statusMessage: "",
+            isVisible: false, // Control visibility to delay rendering
             apiData: {
                 root_url: typeof yunusPluginData !== 'undefined' ? yunusPluginData.root_url : 'http://localhost:5173',
                 nonce: typeof yunusPluginData !== 'undefined' ? yunusPluginData.nonce : 'development_nonce'
@@ -43,12 +45,9 @@ export default {
     methods: {
         async fetchGraphData() {
             try {
-                const apiUrl = `${this.apiData.root_url}/api/data-endpoint`; // Update this line to point to your actual API endpoint
-                const headers = this.apiData.nonce !== 'development_nonce' ? { 'X-WP-Nonce': this.apiData.nonce } : {};
-
-                const response = await fetch(apiUrl, { headers });
-
-                // Ensure the response is JSON
+                const apiUrl = 'https://miusage.com/v1/challenge/2/static/';
+                const response = await fetch(apiUrl);
+                
                 const contentType = response.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
                     throw new Error("Received non-JSON response");
@@ -57,30 +56,33 @@ export default {
                 const result = await response.json();
                 console.log("Graph data:", result);  // Debugging log
 
-                // Update this section based on the actual structure of result
-                if (result.data) { // Adjust this based on your actual API response structure
-                    this.chartData = {
-                        labels: result.data.map(item => item.label), // Adjust according to your data structure
-                        datasets: [
-                            {
-                                label: 'Sample Data',
-                                backgroundColor: '#42b983',
-                                data: result.data.map(item => item.value) // Adjust according to your data structure
-                            }
-                        ]
-                    };
-                } else {
-                    console.error("Unexpected graph data format:", result);
-                    this.statusMessage = "Unexpected data format for graph data.";
-                }
+                // Use only the top 10 data points, adjust as necessary
+                const rows = result.table.data.rows.slice(0, 10);
+                this.chartData = {
+                    labels: rows.map(item => item.title),
+                    datasets: [
+                        {
+                            label: 'Pageviews',
+                            backgroundColor: '#42b983',
+                            data: rows.map(item => item.pageviews)
+                        }
+                    ]
+                };
             } catch (error) {
                 console.error("Error fetching graph data:", error);
                 this.statusMessage = "Error fetching graph data.";
             }
+        },
+        handleVisibility() {
+            if (!this.isVisible) {
+                this.isVisible = true;
+                this.fetchGraphData();
+            }
         }
     },
     mounted() {
-        this.fetchGraphData();
+        // Load data only when the component becomes visible
+        this.handleVisibility();
     }
 };
 </script>

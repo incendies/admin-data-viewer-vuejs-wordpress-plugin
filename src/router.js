@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 const routes = [
     {
         path: '/',
-        redirect: '/table'  // Redirect root path to /table
+        redirect: '/table'  // Redirect mainpage root path to /table
     },
     {
         path: '/table',
