@@ -32,7 +32,7 @@ export default {
             },
             statusMessage: "",
             apiData: {
-                root_url: typeof yunusPluginData !== 'undefined' ? yunusPluginData.root_url.replace(/\/?$/, '/') : 'http://localhost:5173/',
+                root_url: typeof yunusPluginData !== 'undefined' ? yunusPluginData.root_url.replace(/\/?$/, '/') : 'http://localhost:5173/', // Adjust this URL for local API endpoint
                 nonce: typeof yunusPluginData !== 'undefined' ? yunusPluginData.nonce : 'development_nonce'
             }
         };
@@ -56,6 +56,7 @@ export default {
                 const response = await fetch(apiUrl, { headers });
 
                 if (!response.ok) {
+                    console.error(`HTTP error! Status: ${response.status}, Text: ${await response.text()}`);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
@@ -78,7 +79,7 @@ export default {
             }
         },
         async saveSettings() {
-            if (this.apiData.root_url === 'http://localhost:5173/') {
+            if (this.apiData.root_url === 'http://localhost:5173/') { // Adjust this URL for local API endpoint
                 console.log("Mock saving settings locally:", this.settings);
                 this.statusMessage = "Settings saved successfully! (Mock)";
                 return;
@@ -103,6 +104,7 @@ export default {
                 });
 
                 if (!response.ok) {
+                    console.error(`HTTP error! Status: ${response.status}, Text: ${await response.text()}`);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 

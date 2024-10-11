@@ -7,7 +7,7 @@ A WordPress plugin that displays data from a remote API in a Vue app for admin u
 
 ## Installation
 1. **Download the Plugin**: 
-   - Go to the [releases page](https://github.com/your-repo/admin-content-view-vuejs-plugin/releases) (replace with your actual repository link) and download the latest release as a ZIP file.
+   - Go to the [releases page](https://github.com/incendies/admin-data-viewer-vuejs-wordpress-plugin/releases) (replace with your actual repository link) and download the latest release as a ZIP file.
 
 2. **Upload the Plugin**:
    - Log in to your WordPress admin panel.

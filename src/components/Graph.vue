@@ -37,7 +37,7 @@ export default {
             statusMessage: "",
             isVisible: false, // Control visibility to delay rendering
             apiData: {
-                root_url: typeof yunusPluginData !== 'undefined' ? yunusPluginData.root_url : 'http://localhost:5173',
+                root_url: typeof yunusPluginData !== 'undefined' ? yunusPluginData.root_url : 'http://localhost:5173', // change URL with your localhost details
                 nonce: typeof yunusPluginData !== 'undefined' ? yunusPluginData.nonce : 'development_nonce'
             }
         };
